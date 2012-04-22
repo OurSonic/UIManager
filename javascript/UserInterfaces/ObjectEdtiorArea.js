@@ -5,8 +5,8 @@ window.ObjectEditorArea = function () {
         height: 400,
         manager: uiManager,
         visible: true,
-        editMode: false
-    }); ;
+        editMode: true
+    });
 
 
     uiManager.UIAreas.push(objectEditorArea); ;

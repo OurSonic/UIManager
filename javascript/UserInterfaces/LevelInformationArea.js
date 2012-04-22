@@ -7,13 +7,20 @@ window.LevelInformationArea = function () {
         height: 420,
         manager: uiManager,
         visible: true,
-        editMode:false
+        editMode:true
     });
     uiManager.UIAreas.push(levelInformation);
     levelInformation.addControl(new TextArea(30, 25, {
         text: "Level Selector",
         font: uiManager.textFont,
         color: "blue"
+    }));
+    levelInformation.addControl(new TextBox(350, 18, {
+        text: "Level Selector",
+        font: uiManager.textFont,
+        color: "blue",
+        width:140,
+        height:22
     }));
     levelInformation.addControl(new TextArea(30, 52, {
         text: function () { return uiManager.curLevelName; },
