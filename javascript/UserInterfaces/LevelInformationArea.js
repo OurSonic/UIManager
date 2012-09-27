@@ -2,12 +2,12 @@ window.LevelInformationArea = function () {
 
     uiManager.curLevelName = "Level Not Saved";
 
-    var levelInformation = uiManager.levelInformation = new UiArea(390, 70, {
+    var levelInformation = uiManager.levelInformation = new UiArea(190, 70, {
         width: 550,
         height: 420,
         manager: uiManager,
         visible: true,
-        editMode:true
+        editMode: true
     });
     uiManager.UIAreas.push(levelInformation);
     levelInformation.addControl(new TextArea(30, 25, {
@@ -19,8 +19,8 @@ window.LevelInformationArea = function () {
         text: "Level Selector",
         font: uiManager.textFont,
         color: "blue",
-        width:140,
-        height:22
+        width: 140,
+        height: 22
     }));
     levelInformation.addControl(new TextArea(30, 52, {
         text: function () { return uiManager.curLevelName; },
@@ -96,7 +96,7 @@ window.LevelInformationArea = function () {
     var curLevelName;
 
     //    var getLevels = OurSonic.SonicLevels.getLevels;
-    var getLevels = function (exe) {exe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);};
+    var getLevels = function (exe) { exe([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); };
 
 
     getLevels(function (lvls) {
@@ -131,4 +131,96 @@ window.LevelInformationArea = function () {
             uiManager.loadGame(lvl, sonicManager.mainCanvas);
         });
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    var controlList = uiManager.controlList = new UiArea(1300, 70, {
+        width: 400,
+        height: 480,
+        manager: uiManager,
+        visible: true,
+        editMode: false
+    });
+    uiManager.UIAreas.push(controlList);
+
+
+    var props2;
+    controlList.addControl(props2 = new ScrollBox(15, 70, {
+        itemHeight: 100,
+        visibleItems: 3,
+        itemWidth: 100,
+        backColor: "rgb(50,60,127)"
+    }));
+
+    controlList.populate = function (obj) {
+        props2.clearControls();
+        for (var pr in obj) {
+            if (!_H.isFunction(obj[pr])) {
+                props2.addControl(new Button(0, 0, {
+                    text: pr,
+                    font: "8pt Arial",
+                    color: "rgb(50,190,90)",
+                    click: function () {
+
+                    }
+                }));
+            }
+        }
+    };
+    
+
+
+
+
+
+
+
+
+
+    var propertyList = uiManager.propertyList = new UiArea(850, 70, {
+        width: 400,
+        height: 480,
+        manager: uiManager,
+        visible: true,
+        editMode: false
+    });
+    uiManager.UIAreas.push(propertyList);
+
+
+    var props;
+    propertyList.addControl(props = new ScrollBox(15, 70, {
+        itemHeight: 25,
+        visibleItems: 11,
+        itemWidth: 350,
+        backColor: "rgb(50,60,127)"
+    }));
+    
+    propertyList.populate = function (obj) {
+        props.clearControls();
+        for (var pr in obj) {
+            if (!_H.isFunction(obj[pr])) {
+                props.addControl(new PropertyButton(0, 0, {
+                    object: obj,
+                    name:pr,
+                    font: "8pt Arial",
+                    color: "rgb(50,190,90)",
+                    click: function () {
+
+                    }
+                }));
+            }
+        }
+    };
+
+
 };

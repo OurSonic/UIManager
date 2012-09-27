@@ -28,39 +28,9 @@
     <script src="javascript/SonicEngine.js?1" type="text/javascript"> 
     </script>
     <script src="javascript/UIArea.js?1" type="text/javascript"> 
-    </script> 
-    <script src="javascript/UserInterfaces/BGEditorArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ObjectEdtiorArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ColorEditorArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/DebuggerArea.js?1" type="text/javascript"> 
-    </script>
+    </script>  
     <script src="javascript/UserInterfaces/LevelInformationArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/LevelManagerArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ModifyTileArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ModifyTilePieceArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ModifyTileChunkArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ModifyTilePieceArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ObjectFrameworkListArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ObjectFrameworkArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/ObjectInfoArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/SolidTileArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/TileChunkArea.js?1" type="text/javascript"> 
-    </script>
-    <script src="javascript/UserInterfaces/TilePieceArea.js?1" type="text/javascript"> 
-    </script>
+    </script> 
     <script type="text/javascript">
     //<![CDATA[
         $(function () {
@@ -75,6 +45,7 @@
 <body style="background-color: #000080;">
     <form id="form1" runat="server"> 
     <canvas id="build" style="margin: 0px; position: absolute; top: 0px; left: 0px; z-index: 0;"></canvas> 
+    <textarea id="items" style="z-index: -100;"></textarea>
     </form>
 </body>
 </html>

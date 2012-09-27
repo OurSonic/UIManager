@@ -97,6 +97,13 @@ function SonicEngine(canvasName) {
         clear(that.canvasItem);
 
         uiManager.draw(that.canvasItem);
+        /*
+        var st = '';
+        for (var j = 0; j < uiManager.UIAreas.length; j++) {
+            st += _H.stringify(uiManager.UIAreas[j]) + "         \r\n";
+        }
+
+        $(items).text(st);*/
 
         that.canvasItem.save();
         for (var i = 0; i < window.DEBUGLABELS.length; i++) {

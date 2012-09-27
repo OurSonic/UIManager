@@ -131,6 +131,9 @@
         var w = this.element.width;
         var h = this.element.height;
 
+        uiManager.propertyList.populate(this.element);
+
+
         for (var i = 0; i < this.points.length; i++) {
             var j = this.points[i];
             j.editing = false;
@@ -232,6 +235,7 @@
         return this.editing;
     };
     this.draw = function (canv) {
+        canv.save();
         var size = 0;
         canv.strokeStyle = canv.fillStyle = 'white';
         canv.lineWidth = 3;
@@ -251,6 +255,7 @@
         }
 
 
+        canv.restore();
 
     };
 };
@@ -276,6 +281,7 @@ Element.prototype.init = function () {
     this.editMode = false;
     this.editorEngine = null;
     this.parent = null;
+    this.focused = false;
     this.editorEngine = new EditorEngine(this);
 
 
@@ -315,8 +321,10 @@ Element.prototype.forceDrawing = function () {
 Element.prototype.onKeyDown = function (e) {
 };
 Element.prototype.focus = function () {
+    this.focused = true;
 };
 Element.prototype.loseFocus = function () {
+    this.focused = false;
 };
 Element.prototype.onClick = function (e) {
     if (this.isEditMode() == true) {
@@ -379,10 +387,10 @@ UiArea.prototype.addControl = function (control) {
     this.controls.push(control);
     return control;
 };
-UiArea.prototype.focus = function () {
+UiArea.prototype.focus = function (e) {
     for (var ij = 0; ij < this.controls.length; ij++) {
         var control = this.controls[ij];
-        control.focus();
+        control.focus(e);
     }
 }
     ;
@@ -394,19 +402,21 @@ UiArea.prototype.loseFocus = function () {
 };
 UiArea.prototype.onClick = function (e) {
     if (!this.visible) return false;
-
+    var clicked = false;
     for (var ij = 0; ij < this.controls.length; ij++) {
         var control = this.controls[ij];
-        control.focused = false;
-        if (control.visible && ((control.editorEngine.editing) || (control.y <= e.y && control.y + control.height > e.y && control.x <= e.x && control.x + control.width > e.x))) {
+        if (control.visible && control.y <= e.y && control.y + control.height > e.y && control.x <= e.x && control.x + control.width > e.x) {
             e.x -= control.x;
             e.y -= control.y;
+            control.focus(_H.clone(e));
             control.onClick(e);
-            return false;
+            clicked = true;
+        } else {
+            control.loseFocus();
 
         }
     }
-    if(!this.isEditMode())
+    if (!clicked && !this.isEditMode())
         this.dragging = { x: e.x, y: e.y };
 };
 UiArea.prototype.onKeyDown = function (e) {
@@ -468,6 +478,8 @@ UiArea.prototype.draw = function (canv) {
     var good;
     var t;
     var j;
+    canv.save();
+
     if (!this.cachedDrawing) {
 
         var cg = document.createElement("canvas");
@@ -516,7 +528,6 @@ UiArea.prototype.draw = function (canv) {
     if (this.cachedDrawing.width != this.width || this.cachedDrawing.height != this.height)
         this.cachedDrawing = null;
 
-    _H.save(canv);
     for (j = 0; j < this.controls.length; j++) {
         t = this.controls[j];
         good = t.forceDrawing();
@@ -556,6 +567,8 @@ TextArea.prototype.forceDrawing = function () {
 TextArea.prototype.draw = function (canv) {
 
     if (!this.visible) return;
+
+    canv.save();
     var txt = _H.isFunction(this.text) ? this.text() : this.text;
     if (canv.font != this.font)
         canv.font = this.font;
@@ -572,6 +585,7 @@ TextArea.prototype.draw = function (canv) {
     canv.fillStyle = this.color;
 
     canv.fillText(txt, this.parent.x + this.x, this.parent.y + this.y + h);
+    canv.restore();
 
 };
 
@@ -623,6 +637,8 @@ ImageButton.prototype.draw = function (canv) {
 
     if (!this.visible) return;
 
+    canv.save();
+
     if (!this.created) {
         this.created = true;
         this.button1Grad = canv.createLinearGradient(0, 0, 0, 1);
@@ -664,14 +680,16 @@ ImageButton.prototype.draw = function (canv) {
     this.image(canv, this.parent.x + this.x, this.parent.y + this.y);
 
     canv.fillText(txt, this.parent.x + this.x + ((this.width / 2) - (canv.measureText(txt).width / 2)), this.parent.y + this.y + this.height - 3);
+
+    canv.restore();
+
 };
 _H.extends(Element, ImageButton);
+
 
 function Button() {
     this.init.apply(this, arguments);
 }
-
-
 Button.prototype.init = function () {
     this.text = '';
     this.toggle = false;
@@ -709,6 +727,7 @@ Button.prototype.onMouseOver = function (e) {
 Button.prototype.draw = function (canv) {
 
     if (!this.visible) return;
+    canv.save();
 
     if (!this.created) {
         this.created = true;
@@ -747,10 +766,99 @@ Button.prototype.draw = function (canv) {
     canv.fillStyle = "#000000";
     var txt = (_H.isFunction(this.text) ? this.text() : this.text);
     canv.fillText(txt, this.parent.x + this.x + ((this.width / 2) - (canv.measureText(txt).width / 2)), this.parent.y + this.y + (this.height / 3) * 2);
+    canv.restore();
 
 };
 
 _H.extends(Element, Button);
+
+
+
+
+
+function PropertyButton() {
+    this.init.apply(this, arguments);
+}
+PropertyButton.prototype.init = function (x, y, props) {
+    this.button = new Button(0, 0, { text: props.name });
+    this.textbox = new TextBox(0, 0, { text: props.object[props.name] + "" });
+};
+PropertyButton.prototype.onClick = function (e) {
+
+    if (!this.visible) return;
+    if (e.x < this.width / 2)
+        this.button.onClick(e);
+    if (e.x > this.width / 2)
+        this.textbox.onClick(e);
+};
+PropertyButton.prototype.onMouseUp = function (e) {
+
+    if (!this.visible) return;
+
+    this.button.onMouseUp(e);
+    this.textbox.onMouseUp(e);
+};
+PropertyButton.prototype.onMouseOver = function (e) {
+
+    if (!this.visible) return;
+    if (e.x < this.width / 2)
+        this.button.onMouseOver(e);
+    if (e.x > this.width / 2)
+        this.textbox.onMouseOver(e);
+};
+PropertyButton.prototype.focus = function (e) {
+
+    if (!this.visible) return;
+    if (e.x < this.width / 2)
+        this.button.focus(e);
+    else {
+        this.button.loseFocus(e);
+    }
+    if (e.x > this.width / 2)
+        this.textbox.focus(e);
+    else {
+        this.textbox.loseFocus(e);
+    }
+}
+    ;
+PropertyButton.prototype.loseFocus = function () {
+
+    if (!this.visible) return;
+
+    this.button.loseFocus();
+    this.textbox.loseFocus();
+};
+
+PropertyButton.prototype.draw = function (canv) {
+
+    if (!this.visible) return;
+    canv.save();
+
+    var w2 = Math.floor(this.width / 2);
+    this.button.width = w2;
+    this.textbox.width = w2;
+
+    this.button.height = this.height;
+    this.textbox.height = this.height;
+
+    this.button.x = 0;
+    this.button.y = 0;
+
+    this.textbox.x = w2;
+    this.textbox.y = 0;
+
+    this.button.parent = { x: this.parent.x + this.x, y: this.parent.y + this.y };
+    this.textbox.parent = { x: this.parent.x + this.x, y: this.parent.y + this.y };
+
+    this.button.draw(canv);
+    this.textbox.draw(canv);
+    canv.restore();
+};
+
+_H.extends(Element, PropertyButton);
+
+
+
 
 
 
@@ -772,7 +880,6 @@ TextBox.prototype.init = function () {
     this.drawTicks = 0;
     this.lastClickTick = 0;
     this.created = false;
-    this.focused = false;
     this.blinked = false;
     this.blinkTick = 0;
     this.button1Grad = null;
@@ -875,7 +982,7 @@ TextBox.prototype.onClick = function (e) {
 
     if (!this.visible) return;
     this.clicking = true;
-    this.focused = true;
+    can.save();
     if (can.font != this.font)
         can.font = this.font;
     for (var i = 0; i < this.text.length; i++) {
@@ -895,6 +1002,8 @@ TextBox.prototype.onClick = function (e) {
         this.selectWord();
     }
     this.lastClickTick = this.drawTicks;
+    can.restore();
+
 };
 TextBox.prototype.selectWord = function () {
     var j = this.text.split(' ');
@@ -930,6 +1039,8 @@ TextBox.prototype.onMouseOver = function (e) {
         if (this.dragPosition == -1) {
             this.dragPosition = this.cursorPosition;
         }
+        can.save();
+
         if (can.font != this.font)
             can.font = this.font;
         for (var i = 0; i < this.text.length; i++) {
@@ -939,6 +1050,8 @@ TextBox.prototype.onMouseOver = function (e) {
                 return;
             }
         }
+        can.restore();
+
         this.cursorPosition = this.text.length;
     }
     if (this.mouseOver) this.mouseOver();
@@ -946,11 +1059,12 @@ TextBox.prototype.onMouseOver = function (e) {
 TextBox.prototype.draw = function (canv) {
 
     if (!this.visible) return;
+    canv.save();
     if (!this.focused) {
         this.cursorPosition = -1;
         this.dragPosition = -1;
     }
-    this.drawTicks++
+    this.drawTicks++;
     can = canv;
     if (!this.created) {
         this.created = true;
@@ -985,7 +1099,12 @@ TextBox.prototype.draw = function (canv) {
             w2 - w1, (this.height - 7));
     }
     canv.fillStyle = "#000000";
-    var hc = parseInt(canv.font.substr(0, canv.font.indexOf('pt')));
+
+    var hc;
+    if (canv.font.indexOf('pt') != -1)
+        hc = parseInt(canv.font.substr(0, canv.font.indexOf('pt')));
+    else
+        hc = parseInt(canv.font.substr(0, canv.font.indexOf('px')));
     canv.fillText(this.text, this.parent.x + this.x + 8, this.parent.y + this.y + ((this.height - hc) / 2) + this.height / 2);
 
     if (this.focused && ((this.blinkTick++ % 35) == 0)) {
@@ -1000,6 +1119,8 @@ TextBox.prototype.draw = function (canv) {
         canv.lineWidth = 2;
         canv.stroke();
     }
+    canv.restore();
+
 };
 
 _H.extends(Element, TextBox);
@@ -1024,16 +1145,16 @@ Panel.prototype.addControl = function (control) {
     this.controls.push(control);
     return control;
 };
-Panel.prototype.focus = function () {
+Panel.prototype.focus = function (e) {
     for (var ij = 0; ij < this.controls.length; ij++) {
         var control = this.controls[ij];
-        control.focus();
+        control.focus(e);
     }
 };
-Panel.prototype.loseFocus = function () {
+Panel.prototype.loseFocus = function (e) {
     for (var ij = 0; ij < this.controls.length; ij++) {
         var control = this.controls[ij];
-        control.loseFocus();
+        control.loseFocus(e);
     }
 };
 Panel.prototype.empty = function () {
@@ -1114,6 +1235,7 @@ Panel.prototype.draw = function (canv) {
     var j;
     var _x = this.x;
     var _y = this.y;
+    canv.save();
 
     this.x += this.parent.x;
     this.y += this.parent.y;
@@ -1138,6 +1260,8 @@ Panel.prototype.draw = function (canv) {
     }
     this.x = _x;
     this.y = _y;
+    canv.restore();
+
 };
 _H.extends(Element, Panel);
 
@@ -1271,6 +1395,9 @@ HScrollBox.prototype.onScroll = function (e) {
 HScrollBox.prototype.draw = function (canv) {
 
     if (!this.visible) return;
+
+    canv.save();
+
     canv.fillStyle = this.backColor;
 
     var i;
@@ -1305,6 +1432,9 @@ HScrollBox.prototype.draw = function (canv) {
         curX += this.itemWidth + this.jWidth;
         this.controls[i].draw(canv);
     }
+
+    canv.restore();
+
 
 
 };
@@ -1380,6 +1510,7 @@ PaletteArea.prototype.draw = function (canv) {
 
     if (!this.visible) return;
     if (!this.palette) return;
+    canv.save();
 
 
     canv.strokeStyle = "#000";
@@ -1416,6 +1547,9 @@ PaletteArea.prototype.draw = function (canv) {
             canv.strokeRect(pos.x, pos.y + f * this.scale.y, this.scale.x * 2, this.scale.y * 2);
         }
     }
+
+    canv.restore();
+
 
 };
 
@@ -1477,6 +1611,34 @@ ScrollBox.prototype.addControl = function (control) {
     control.parent = this;
     this.controls.push(control);
     return control;
+};
+ScrollBox.prototype.clearControls = function () {
+    for (var i = 0; i < this.controls.length; i++) {
+        this.controls[i].parent = null; //maybe list of parents?
+    }
+    this.controls.length = 0;
+};
+
+ScrollBox.prototype.focus = function (e) {
+    if (!this.visible) return;
+    for (var ij = this.scrollOffset; ij < this.controls.length; ij++) {
+        var control = this.controls[ij];
+        if (control.y <= e.y && control.y + control.height > e.y && control.x <= e.x && control.x + control.width > e.x) {
+            e.x -= control.x;
+            e.y -= control.y;
+            control.focus(e);
+            return false;
+
+        }
+    }
+};
+ScrollBox.prototype.loseFocus = function () {
+    if (!this.visible) return;
+    for (var ij = this.scrollOffset; ij < this.controls.length; ij++) {
+        var control = this.controls[ij];
+              control.loseFocus();
+           
+    }
 };
 ScrollBox.prototype.onClick = function (e) {
 
@@ -1574,6 +1736,9 @@ ScrollBox.prototype.draw = function (canv) {
 
 
     if (!this.visible) return;
+
+    canv.save();
+
     canv.fillStyle = this.backColor;
 
     var i;
@@ -1608,6 +1773,7 @@ ScrollBox.prototype.draw = function (canv) {
         curY += this.itemHeight + this.jHeight;
         this.controls[i].draw(canv);
     }
+    canv.restore();
 
 };
 
@@ -1616,6 +1782,7 @@ _H.extends(Element, ScrollBox);
 
 
 function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+    ctx.save();
     if (typeof stroke == "undefined") {
         stroke = true;
     }
@@ -1640,6 +1807,7 @@ function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
     if (fill) {
         ctx.fill();
     }
+    ctx.restore();
 }
 
 

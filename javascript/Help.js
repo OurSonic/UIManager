@@ -2,7 +2,18 @@
     extend: function (to, from) {
         for (var prop in from) to[prop] = from[prop];
         return to;
-    },    extends: function (parent, child) {
+    },
+    isFunction: function (functionToCheck) {
+        var getType = {};
+        return functionToCheck && getType.toString.call(functionToCheck) == '[object Function]';
+    }, clone:function(D) {
+        var n = { };
+        for (var j in D) {
+            n[j] = D[j];
+        }
+        return n;
+    }
+    , extends: function (parent, child) {
         child.constructor.prototype = (function (pp, cp) {
             return function () {
                 pp.constructor.apply(this, arguments);
@@ -394,15 +405,20 @@
 
         return JSON.stringify(obj, function (key, value) {
 
+            if (key == "parent") return undefined;
+            if (key == "manager") return undefined;
+            if (key == "editorEngine") return undefined;
+            if (key == "cachedDrawing") return undefined;
             if (key == "imageData") return undefined;
             if (key == "oldScale") return undefined;
             if (key == "sprite") return undefined;
             if (key == "sprites") return undefined;
             if (key == "index") return undefined;
             if (key == "_style") return undefined;
+            
 
             else return value;
-        }).replaceAll("false", "0").replaceAll("true", "1");
+        },4).replaceAll("false", "0").replaceAll("true", "1");
     },
     sin: function (f) {
 

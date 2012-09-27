@@ -9,26 +9,20 @@
     mainCanvas.font = textFont;
 
     this.draw = function (canvas) {
-
-
         _H.save(canvas);
-
         var cl = JSLINQ(this.UIAreas).OrderBy(function (f) {
             return f.depth;
         });
-
         for (var ij = 0; ij < cl.items.length; ij++) {
             var are = cl.items[ij];
             are.draw(canvas);
         }
-
         if (DEBUGs) {
             for (var i = 0; i < this.messages.length; i++) {
                 canvas.fillText(this.messages[i], 10, 25 + i * 30);
             }
         }
         _H.restore(canvas);
-
     };
 
     this.onMouseScroll = function (evt) {
@@ -83,7 +77,7 @@
                 are = this.UIAreas[ij];
                 if (goodArea == are) {
                     are.depth = 1;
-                    are.focus();
+                    are.focus(e);
                 } else {
                     if (are.visible) {
                         are.depth = 0;
@@ -163,7 +157,7 @@
     window.ObjectInfoArea();
     */
     window.LevelInformationArea();
-    window.ObjectEditorArea();
+    //window.ObjectEditorArea();
 
 }
   
